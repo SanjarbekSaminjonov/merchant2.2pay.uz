@@ -6,11 +6,28 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import DeviceTable from '../device-table';
 import axiosInstance from 'src/routes/axios-config';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid , Fab} from '@mui/material';
 import AnimatedComponent from 'src/components/animate/animatedComponent';
 import LoadingSpinner from 'src/components/loading/loading';
-
+import {Fade, Button} from '@mui/material';
+import { KeyboardArrowUpOutlined } from '@mui/icons-material';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 export default function DevicesActivityView() {
+ 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
+  };
   const {
     data: devicesActivity,
     error: devicesActivityError,
@@ -40,6 +57,9 @@ export default function DevicesActivityView() {
   if (devicesActivityLoading || deviceStatusLoading) return <LoadingSpinner />;
 
   const filterDevices = Object.groupBy(deviceStatus, ({ company }) => company?.id);
+  
+
+
 
   return (
     <Container>
@@ -55,6 +75,24 @@ export default function DevicesActivityView() {
             <DeviceTable data={filterDevices[key]} />
           </AnimatedComponent>
         ))}
+      </Box>
+      <Box
+        sx={{
+          position: 'fixed',
+          right: 16,
+          bottom: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          zIndex: 1000, // Tugmalar yuqori qatlamda bo'lishi uchun
+        }}
+      >
+        <Fab color="primary" size="small" onClick={scrollToTop}>
+          <ArrowUpwardIcon />
+        </Fab>
+        <Fab color="secondary" size="small" onClick={scrollToBottom}>
+          <ArrowDownwardIcon />
+        </Fab>
       </Box>
     </Container>
   );
