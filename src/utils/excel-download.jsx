@@ -14,7 +14,7 @@ const ExcelDownload = ({ title, formattedData }) => {
     const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(data, title+'.xlsx');
   };
-  if (formattedData.length === 0) {
+  if (formattedData?.length === 0) {
     return null;
    }
   return (

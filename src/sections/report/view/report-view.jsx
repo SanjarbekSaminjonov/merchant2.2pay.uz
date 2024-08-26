@@ -1,12 +1,7 @@
-import * as React from 'react';
-import {  useState } from 'react';
-
+import React, { useState } from 'react';
 import axiosInstance from 'src/routes/axios-config';
 import { useQuery } from '@tanstack/react-query';
-
 import formatDate from 'src/utils/format-date';
-
-//material ui
 import {
   Paper,
   Table,
@@ -26,6 +21,7 @@ import {
   TextField,
 } from '@mui/material';
 import LoadingSpinner from 'src/components/loading/loading';
+import { blue } from '@mui/material/colors';
 
 export default function Report() {
   const [page, setPage] = useState(0);
@@ -44,6 +40,7 @@ export default function Report() {
   };
 
   const handleSearchChange = (event) => {
+    // event.preventDefault();
     setSearchTerm(event.target.value);
   };
 
@@ -56,27 +53,7 @@ export default function Report() {
     setPage(0);
   };
 
-  const {
-    isLoading,
-    error,
-    data: reportData,
-  } = useQuery({
-    queryKey: ['report', page, rowsPerPage, filial, device, searchTerm],
-    queryFn: () =>
-      axiosInstance
-        .get(
-          `/merchant/report/?page_size=${rowsPerPage}&page=${
-            page + 1
-          }${filial !== 'all' ? `&device__company=${filial}` : ''}${
-            device !== 'all' ? `&device=${device}` : ''
-          }${searchTerm ? `&search=${searchTerm}` : ''}`
-        )
-        .then((res) => res.data),
-    onError: (error) => {
-      console.error(error);
-    },
-  });
-
+  // Filial ma'lumotlarini olish uchun query
   const {
     data: filials,
     isLoading: isLoadingFilials,
@@ -84,11 +61,9 @@ export default function Report() {
   } = useQuery({
     queryKey: ['filials'],
     queryFn: () => axiosInstance.get('/merchant/filials/').then((res) => res.data),
-    onError: (error) => {
-      console.error(error);
-    },
   });
 
+  // Qurilma ma'lumotlarini olish uchun query
   const {
     data: devices,
     isLoading: isLoadingDevices,
@@ -99,14 +74,35 @@ export default function Report() {
       axiosInstance
         .get(`/merchant/devices/?company=${filial !== 'all' ? filial : ''}`)
         .then((res) => res.data),
-    onError: (error) => {
-      console.error(error);
-    },
   });
 
-  if (isLoading || isLoadingDevices || isLoadingFilials) return <LoadingSpinner />;
+  // Hisobot jadvalini olish uchun query
+  const {
+    isLoading,
+    error,
+    data: reportData,
+  } = useQuery(
+    {
+      queryKey: ['report', page, rowsPerPage, filial, device, searchTerm],
+      queryFn: () =>
+        axiosInstance
+          .get(
+            `/merchant/report/?page_size=${rowsPerPage}&page=${
+              page + 1
+            }${filial !== 'all' ? `&device__company=${filial}` : ''}${
+              device !== 'all' ? `&device=${device}` : ''
+            }${searchTerm ? `&search=${searchTerm}` : ''}`
+          )
+          .then((res) => res.data),
+    }
+    // {
+    //   keepPreviousData: true, // Eski ma'lumotlarni yangi ma'lumotlar kelguncha saqlab turadi
+    // }
+  );
+
 
   if (error || errorDevices || errorFilials) return 'An error has occurred: ' + error;
+
   return (
     <Container>
       <Box
@@ -129,7 +125,15 @@ export default function Report() {
             value={filial}
             label="Filialni tanlang"
             onChange={handleFilialChange}
-            placeholder="Filialni tanlang"
+            MenuProps={{
+              PaperProps: {
+                style: {
+                  maxHeight: 200, // Menu uzunligini chegaralash
+                  overflowY: 'auto', // Faqat drop-down menyu uchun scroll
+                },
+              },
+              disableScrollLock: true, // Sahifa scrollini bloklashni o'chirish
+            }}
           >
             <MenuItem value="all">Barchasi</MenuItem>
             {filials?.map((item) => (
@@ -147,10 +151,18 @@ export default function Report() {
             value={device}
             label="Qurilmani tanlang"
             onChange={handleDeviceChange}
-            placeholder="Qurilmani tanlang"
+            MenuProps={{
+              PaperProps: {
+                style: {
+                  maxHeight: 200, // Menu uzunligini chegaralash
+                  overflowY: 'auto', // Faqat drop-down menyu uchun scroll
+                },
+              },
+              disableScrollLock: true, // Sahifa scrollini bloklashni o'chirish
+            }}
           >
             <MenuItem value="all">Barchasi</MenuItem>
-            {devices.map((item) => (
+            {devices?.map((item) => (
               <MenuItem key={item?.id} value={item?.id}>
                 {item?.name}
               </MenuItem>
@@ -166,50 +178,56 @@ export default function Report() {
           />
         </FormControl>
       </Box>
-
-      <Paper
-        sx={{
-          width: '100%',
-          overflow: 'hidden',
-          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.06), 0px 4px 6px rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        <TableContainer>
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                <TableCell>SANA VA VAQT</TableCell>
-                <TableCell>FILIAL NOMI</TableCell>
-                <TableCell>QURILMA NOMI</TableCell>
-                <TableCell>NAQD TO'LOV</TableCell>
-                <TableCell>ONLINE TO'LOV</TableCell>
-                <TableCell>MANUAL</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {reportData?.results?.map((row) => (
-                <TableRow key={row?.id}>
-                  <TableCell>{formatDate(row?.created)}</TableCell>
-                  <TableCell>{row?.device?.company?.name}</TableCell>
-                  <TableCell>{row?.device?.name}</TableCell>
-                  <TableCell>{row?.diff?.cash}</TableCell>
-                  <TableCell>{row?.diff?.click}</TableCell>
-                  <TableCell>{row?.diff?.manual}</TableCell>
+      {isLoading || isLoadingDevices || isLoadingFilials ? (
+        <LoadingSpinner />
+      ) : (
+        <Paper
+          sx={{
+            width: '100%',
+            overflow: 'hidden',
+            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.06), 0px 4px 6px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <TableContainer>
+            <Table stickyHeader aria-label="sticky table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>SANA VA VAQT</TableCell>
+                  <TableCell>FILIAL NOMI</TableCell>
+                  <TableCell>QURILMA NOMI</TableCell>
+                  <TableCell>NAQD TO'LOV</TableCell>
+                  <TableCell>ONLINE TO'LOV</TableCell>
+                  <TableCell>MANUAL</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={Number(reportData?.count)}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+              </TableHead>
+              <TableBody>
+                {reportData?.results?.map((row) => (
+                  <TableRow key={row?.id}>
+                    <TableCell>{formatDate(row?.created)}</TableCell>
+                    <TableCell>{row?.device?.company?.name}</TableCell>
+                    <TableCell>{row?.device?.name}</TableCell>
+                    <TableCell>{row?.diff?.cash}</TableCell>
+                    <TableCell>{row?.diff?.click}</TableCell>
+                    <TableCell>{row?.diff?.manual}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100]}
+            component="div"
+            count={Number(reportData?.count)}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      )}
     </Container>
   );
 }
+
+ 
+

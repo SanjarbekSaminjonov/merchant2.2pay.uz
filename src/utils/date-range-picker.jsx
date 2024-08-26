@@ -1,5 +1,5 @@
-import 'react-date-range/dist/styles.css'; // asosiy uslub fayli
-import 'react-date-range/dist/theme/default.css'; // mavzu css fayli
+import 'react-date-range/dist/styles.css'; 
+import 'react-date-range/dist/theme/default.css'; 
 
 import { Box, Typography, Button, Stack } from '@mui/material';
 import React, { useState } from 'react';

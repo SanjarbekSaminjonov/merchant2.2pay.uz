@@ -4,7 +4,7 @@ import { ReportView } from 'src/sections/report/view';
 
 // ----------------------------------------------------------------------
 
-export default function UserPage() {
+export default function ReportPage() {
   return (
     <>
       <Helmet>

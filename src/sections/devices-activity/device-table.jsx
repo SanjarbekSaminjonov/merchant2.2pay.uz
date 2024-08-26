@@ -15,7 +15,7 @@ const DeviceTable = ({data}) => {
          return <SignalCellular0BarIcon />;
        case network > 10 && network <= 15:
          return <SignalCellular2BarIcon />;
-       case network > 16 && network <= 19:
+       case network > 15 && network <= 19:
          return <SignalCellular3BarIcon />;
        case network >= 20:
          return <SignalCellular4BarIcon />;

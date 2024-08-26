@@ -21,7 +21,7 @@ export default function Header({ onOpenNav }) {
   const theme = useTheme();
   const lgUp = useResponsive('up', 'lg');
   const { user } = useAuth();
-
+console.log(1)
   // Fetch user data
   const {
     data: userData,

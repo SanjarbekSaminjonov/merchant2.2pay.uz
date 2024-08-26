@@ -5,6 +5,10 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import Skeleton from '@mui/material/Skeleton';
 
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
@@ -94,6 +98,7 @@ export default function FinancingView() {
   });
 
   const isFetching = queries?.some((query) => query.isLoading);
+  
   const filialDetails =  queries?.flatMap((query) => (query.data ? [query.data] : []));
 
   const formattedData = filialDetails?.map((detail) => ({
@@ -109,7 +114,7 @@ export default function FinancingView() {
     'Admin tolovlar': detail.manual.amount ? detail.manual.amount : 0,
     'Admin tolovlar soni': detail.manual.count ? detail.manual.count : 0,
   }));
-  if (isFetching || isLoadingFilials) return <LoadingSpinner />;
+  // if (isFetching || isLoadingFilials) return <LoadingSpinner />;
   return (
     <Container>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'start', justifyContent: 'space-between' }}>
@@ -159,20 +164,49 @@ export default function FinancingView() {
           </AnimatedComponent>
         </Grid>
 
-        {filialDetails?.map((filialDetail) => (
-          <Grid sx={{ width: '100%' }} key={filialDetail.id} item xs={12} sm={6} md={4}>
-            <AnimatedComponent>
-              <FinancingCard
-                id={filialDetail.id}
-                name={filialDetail.name}
-                cash={filialDetail.cash}
-                click={filialDetail.click}
-                devices_count={filialDetail.devices_count}
-                manual={filialDetail.manual}
-              />
-            </AnimatedComponent>
-          </Grid>
-        ))}
+        {isFetching
+          ? Array(5)
+              .fill(0)
+              .map(() => (
+                <Grid sx={{ width: '100%' }}  item xs={12} sm={6} md={4}>
+                  <Box sx={{ minWidth: 275 }}>
+                    <Card
+                      variant="outlined"
+                      sx={{
+                        maxHeight: '265px',
+                        minWidth: '275px',
+                        marginBottom: '20px',
+                        marginLeft: '20px',
+                      }}
+                    >
+                      <CardContent sx={{ lineHeight: '20px' }}>
+                        <Skeleton variant="text" width="80%" />
+                        <Skeleton variant="text" width="60%" />
+                        <Skeleton variant="text" width="70%" />
+                        <Skeleton variant="text" width="60%" />
+                      </CardContent>
+                      <CardActions>
+                        <Skeleton variant="text" width="100%" />
+                      </CardActions>
+                    </Card>
+                  </Box>
+                </Grid>
+              ))
+          : filialDetails?.map((filialDetail) => (
+              <Grid sx={{ width: '100%' }} key={filialDetail.id} item xs={12} sm={6} md={4}>
+                <AnimatedComponent>
+                  <FinancingCard
+                    id={filialDetail.id}
+                    name={filialDetail.name}
+                    cash={filialDetail.cash}
+                    click={filialDetail.click}
+                    devices_count={filialDetail.devices_count}
+                    manual={filialDetail.manual}
+                    isLoading={isFetching}
+                  />
+                </AnimatedComponent>
+              </Grid>
+            ))}
       </Grid>
     </Container>
   );
